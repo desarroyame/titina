@@ -16,10 +16,12 @@ parser.add_argument('--first', type=int, help='Reproducir solo las primeras N pa
 parser.add_argument('--last', type=int, help='Reproducir solo las últimas N palabras')
 parser.add_argument('--range', nargs=2, type=int, metavar=('START', 'END'), 
                     help='Reproducir palabras desde START hasta END')
+parser.add_argument('--no-gap', action='store_true', 
+                    help='Eliminar silencios entre palabras (reproducción continua)')
 args = parser.parse_args()
 
-# Inicializar pygame mixer
-pygame.mixer.init()
+# Inicializar pygame mixer con configuración optimizada
+pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
 
 # Cargar palabras
 if not os.path.exists('titin_words.txt'):
@@ -59,32 +61,60 @@ if not os.path.exists('audio_words'):
 
 print(f"Archivos de audio disponibles: {len(os.listdir('audio_words'))}")
 print(f"\nIniciando reproducción...\n")
+if args.no_gap:
+    print("Modo: Reproducción continua (sin silencios entre palabras)")
 
 start_time = time.time()
 
-for i, word in enumerate(words, 1):
-    audio_file = f"audio_words/{word}.mp3"
-    
-    if not os.path.exists(audio_file):
-        print(f"[{i}/{selected_words}] Advertencia: {word}.mp3 no encontrado")
-        continue
-    
-    # Mostrar progreso cada 100 palabras o en las primeras 10
-    if i % 100 == 0 or i <= 10 or i == selected_words:
-        elapsed = time.time() - start_time
-        progress = (i / selected_words) * 100
-        print(f"[{i}/{selected_words}] ({progress:.1f}%) - {word} - Tiempo: {elapsed:.1f}s", flush=True)
-    
-    # Reproducir audio
-    try:
-        pygame.mixer.music.load(audio_file)
-        pygame.mixer.music.play()
+# Modo sin silencios: usar Sound en lugar de music para mejor control
+if args.no_gap:
+    for i, word in enumerate(words, 1):
+        audio_file = f"audio_words/{word}.mp3"
         
-        # Esperar a que termine
-        while pygame.mixer.music.get_busy():
-            time.sleep(0.01)
-    except Exception as e:
-        print(f"[{i}/{total}] Error reproduciendo {word}: {e}", flush=True)
+        if not os.path.exists(audio_file):
+            print(f"[{i}/{selected_words}] Advertencia: {word}.mp3 no encontrado")
+            continue
+        
+        # Mostrar progreso cada 100 palabras o en las primeras 10
+        if i % 100 == 0 or i <= 10 or i == selected_words:
+            elapsed = time.time() - start_time
+            progress = (i / selected_words) * 100
+            print(f"[{i}/{selected_words}] ({progress:.1f}%) - {word} - Tiempo: {elapsed:.1f}s", flush=True)
+        
+        # Reproducir audio sin gaps
+        try:
+            sound = pygame.mixer.Sound(audio_file)
+            channel = sound.play()
+            # Esperar solo hasta que termine, sin delay adicional
+            while channel.get_busy():
+                pygame.time.wait(1)  # Espera mínima de 1ms
+        except Exception as e:
+            print(f"[{i}/{selected_words}] Error reproduciendo {word}: {e}", flush=True)
+else:
+    # Modo normal con pequeños silencios
+    for i, word in enumerate(words, 1):
+        audio_file = f"audio_words/{word}.mp3"
+        
+        if not os.path.exists(audio_file):
+            print(f"[{i}/{selected_words}] Advertencia: {word}.mp3 no encontrado")
+            continue
+        
+        # Mostrar progreso cada 100 palabras o en las primeras 10
+        if i % 100 == 0 or i <= 10 or i == selected_words:
+            elapsed = time.time() - start_time
+            progress = (i / selected_words) * 100
+            print(f"[{i}/{selected_words}] ({progress:.1f}%) - {word} - Tiempo: {elapsed:.1f}s", flush=True)
+        
+        # Reproducir audio
+        try:
+            pygame.mixer.music.load(audio_file)
+            pygame.mixer.music.play()
+            
+            # Esperar a que termine
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.01)
+        except Exception as e:
+            print(f"[{i}/{selected_words}] Error reproduciendo {word}: {e}", flush=True)
 
 total_time = time.time() - start_time
 print(f"\n¡Reproducción completada!")
