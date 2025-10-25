@@ -1,4 +1,4 @@
-Este repositorio contiene un proyecto en Python para **generar y reproducir el audio de la palabra más larga del mundo**: el nombre químico completo de la proteína Titina.
+El propósito de este repositorio es abordar el reto de hacer que un  agente de IA pronuncie sin pausa una palabra larguísima, esta simple tarea pone en evidencia los límites de diseño y control en los modelos conversacionales como ChatGPT haciendo que modelo “se resista” a ejecutar una tarea, se aborda con Python para **generar y reproducir el audio de la palabra más larga del mundo**: el nombre químico completo de la proteína Titina.
 
 ## Funcionalidades principales:
 
