@@ -43,3 +43,16 @@ python3 play_titin.py --range 100 200
 ```
 *(Reproduce desde la palabra 100 hasta la 200)*
 
+#### Reproducir sin silencios entre palabras
+```bash
+python3 play_titin.py --no-gap
+```
+*(Reproducción continua, eliminando los silencios entre palabras)*
+
+#### Combinar opciones
+```bash
+python3 play_titin.py --first 100 --no-gap
+python3 play_titin.py --range 1 50 --no-gap
+```
+*(Puedes combinar --no-gap con --first, --last o --range)*
+
